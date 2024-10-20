@@ -1,7 +1,8 @@
+import itertools
+from typing import List
+
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from typing import List
-import itertools
 
 from model import FootballMatch, MatchCreate, MatchUpdate
 
@@ -37,19 +38,36 @@ def create_match(match: MatchCreate):
 # Сортировка матчей по полю
 @app.get("/matches/sort/", response_model=List[FootballMatch])
 def get_sorted_matches(field: str, order: str = "asc"):
-    if field not in ["home_team", "away_team", "home_score", "away_score", "match_date", "place", "duration",
-                     "yellow_cards", "red_cards"]:
+    if field not in [
+        "home_team",
+        "away_team",
+        "home_score",
+        "away_score",
+        "match_date",
+        "place",
+        "duration",
+        "yellow_cards",
+        "red_cards",
+    ]:
         raise HTTPException(status_code=400, detail="Invalid field")
 
     reverse = order == "desc"
-    sorted_matches = sorted(app.state.matches, key=lambda x: getattr(x, field), reverse=reverse)
+    sorted_matches = sorted(
+        app.state.matches, key=lambda x: getattr(x, field), reverse=reverse
+    )
     return sorted_matches
 
 
 # Получение статистики по числовым полям
 @app.get("/matches/stats/")
 def get_stats(field: str):
-    if field not in ["home_score", "away_score", "duration", "yellow_cards", "red_cards"]:
+    if field not in [
+        "home_score",
+        "away_score",
+        "duration",
+        "yellow_cards",
+        "red_cards",
+    ]:
         raise HTTPException(status_code=400, detail="Invalid field")
 
     values = [getattr(match, field) for match in app.state.matches]

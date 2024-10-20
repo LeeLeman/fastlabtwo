@@ -2,14 +2,17 @@ import itertools
 
 import pytest
 from fastapi.testclient import TestClient
+
 from main import app
 
 client = TestClient(app)
+
 
 @pytest.fixture(autouse=True)
 def reset_state():
     app.state.matches.clear()
     app.state.id_generator = itertools.count(1)
+
 
 @pytest.fixture
 def create_test_matches():
@@ -22,7 +25,7 @@ def create_test_matches():
         "place": "Лесная опушка",
         "duration": 92,
         "yellow_cards": 3,
-        "red_cards": 0
+        "red_cards": 0,
     }
     match_data_2 = {
         "home_team": "Кошки",
@@ -33,10 +36,11 @@ def create_test_matches():
         "place": "Коридор",
         "duration": 93,
         "yellow_cards": 2,
-        "red_cards": 1
+        "red_cards": 1,
     }
     client.post("/matches/", json=match_data_1)
     client.post("/matches/", json=match_data_2)
+
 
 def test_get_all_matches(create_test_matches):
     response = client.get("/matches/")
@@ -46,6 +50,7 @@ def test_get_all_matches(create_test_matches):
     assert data[0]["home_team"] == "Волки"
     assert data[1]["home_team"] == "Кошки"
 
+
 def test_get_match_by_id(create_test_matches):
     response = client.get("/matches/1")
     assert response.status_code == 200
@@ -54,6 +59,7 @@ def test_get_match_by_id(create_test_matches):
     assert data["home_team"] == "Волки"
     assert data["away_team"] == "Быки"
 
+
 def test_stats(create_test_matches):
     response = client.get("/matches/stats/?field=home_score")
     assert response.status_code == 200
@@ -61,6 +67,7 @@ def test_stats(create_test_matches):
     assert data["average"] == 1.5
     assert data["max"] == 2
     assert data["min"] == 1
+
 
 def test_delete_match(create_test_matches):
     response = client.delete("/matches/1")
